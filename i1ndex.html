@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>İş Takip ve Görev Yönetimi</title>
+<style>
+:root{--bg:#070b16;--glass:rgba(255,255,255,.06);--bd:rgba(255,255,255,.12);--tx:#e8ecf8;--mut:#8b94b0;--c1:#00f0ff;--c2:#b45cff;--ok:#2dff9a;--warn:#ffb020;--bad:#ff4d6d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tx);min-height:100vh;
+background:radial-gradient(circle at 15% 10%,rgba(180,92,255,.22),transparent 40%),radial-gradient(circle at 85% 90%,rgba(0,240,255,.18),transparent 40%),var(--bg);padding:20px}
+.wrap{max-width:1200px;margin:0 auto}
+.glass{background:var(--glass);border:1px solid var(--bd);border-radius:18px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.35)}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+h1{font-size:1.5rem;background:linear-gradient(90deg,var(--c1),var(--c2));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:1.1rem;margin-bottom:14px;color:var(--c1)}
+.sub{color:var(--mut);font-size:.85rem}
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.g2{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+.user{cursor:pointer;text-align:center;transition:.25s}
+.user:hover{transform:translateY(-4px);border-color:var(--c1);box-shadow:0 0 22px rgba(0,240,255,.35)}
+.avatar{width:58px;height:58px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-weight:700;font-size:1.2rem;color:#041018;overflow:hidden;flex-shrink:0;border:2px solid rgba(255,255,255,.25)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar.sm{width:42px;height:42px;font-size:.95rem;margin:0}
+.avatar.xs{width:38px;height:38px;font-size:.85rem;margin:0}
+input,select,textarea{width:100%;padding:10px 12px;margin-bottom:12px;border-radius:10px;border:1px solid var(--bd);background:rgba(0,0,0,.35);color:var(--tx);font:inherit;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--c1);box-shadow:0 0 10px rgba(0,240,255,.3)}
+select option{background:#101528}
+label{font-size:.8rem;color:var(--mut);display:block;margin-bottom:4px}
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 18px;font:inherit;font-weight:600;color:#041018;background:linear-gradient(90deg,var(--c1),var(--c2));transition:.2s}
+button:hover{filter:brightness(1.15);box-shadow:0 0 16px rgba(0,240,255,.45)}
+button.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+button.sm{padding:7px 12px;font-size:.8rem}
+button.del{background:transparent;color:var(--bad);border:1px solid var(--bad);padding:5px 10px;font-size:.75rem}
+.task{background:rgba(0,0,0,.28);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.task h4{margin-bottom:4px}
+.task p{color:var(--mut);font-size:.85rem;margin-bottom:8px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.bar{height:10px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--c1),var(--ok));box-shadow:0 0 10px var(--ok);transition:width .4s}
+.meta{font-size:.78rem;color:var(--mut)}
+.note{margin-top:6px;padding:8px 10px;border-left:3px solid var(--c2);background:rgba(180,92,255,.08);border-radius:6px;font-size:.82rem;white-space:pre-wrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:18px}
+.stat b{display:block;font-size:1.7rem;color:var(--c1)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;color:var(--ok)}
+.live:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:p 1.4s infinite}
+.live.off{color:var(--bad)}.live.off:before{background:var(--bad);box-shadow:0 0 8px var(--bad)}
+@keyframes p{50%{opacity:.3}}
+.warn{background:rgba(255,176,32,.12);border:1px solid var(--warn);color:var(--warn);padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:.88rem}
+.empty{color:var(--mut);text-align:center;padding:18px;font-size:.9rem}
+.hide{display:none!important}
+.emp-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.st{font-size:.7rem;padding:2px 8px;border-radius:99px;border:1px solid}
+.s-bekliyor{color:var(--warn);border-color:var(--warn)}.s-devam{color:var(--c1);border-color:var(--c1)}.s-bitti{color:var(--ok);border-color:var(--ok)}
+#profile{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#profile .avatar{cursor:pointer}
+.ov{position:fixed;inset:0;background:rgba(3,6,14,.75);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{width:100%;max-width:380px;background:rgba(16,21,40,.95)}
+.err{color:var(--bad);font-size:.82rem;min-height:1.1em;margin-bottom:8px}
+.okmsg{color:var(--ok)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>⚡ İş Takip ve Görev Yönetimi</h1><div class="sub">Yapay Zeka Ofisi · Canlı senkronizasyon</div></div>
+    <div class="row">
+      <span id="live" class="live off">Bağlanıyor…</span>
+      <div id="profile" class="hide"></div>
+    </div>
+  </header>
+  <div id="cfgWarn" class="warn hide">⚠️ Firebase ayarları girilmemiş. Dosyanın en altındaki <b>FIREBASE_CONFIG</b> değerlerini kendi projenle değiştir.</div>
+
+  <section id="login" class="glass">
+    <h2>Kullanıcı Seç</h2>
+    <div id="users" class="grid g3"></div>
+  </section>
+
+  <section id="manager" class="hide">
+    <div class="glass" style="margin-bottom:16px"><div id="mHello"></div></div>
+    <div class="stats" id="stats"></div>
+    <div class="glass" style="margin-bottom:16px">
+      <h2>Yeni Görev Ata</h2>
+      <div class="grid g2" style="gap:0 16px">
+        <div><label>Çalışan</label><select id="fWho"></select></div>
+        <div><label>Görev Başlığı</label><input id="fTitle" placeholder="Örn: Chatbot test raporu"></div>
+      </div>
+      <label>Açıklama</label><textarea id="fDesc" rows="2" placeholder="Görev detayı…"></textarea>
+      <button onclick="addTask()">Görevi Ata</button>
+    </div>
+    <div id="mBoard" class="grid g2"></div>
+  </section>
+
+  <section id="employee" class="hide">
+    <div class="glass" style="margin-bottom:16px"><div id="eHello"></div></div>
+    <div id="eTasks"></div>
+  </section>
+</div>
+
+<input type="file" id="photoIn" accept="image/*" class="hide" onchange="uploadPhoto(this)">
+<div id="modalRoot"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const DEFAULT_PASSWORD="Dicle.2121";
+const USERS=[
+ {id:"mahmut",name:"Mahmut Yeşil",title:"Yapay Zeka Ofisi Yöneticisi",manager:true},
+ {id:"yasir",name:"Yasir Ok",title:"Yapay Zeka Uzmanı"},
+ {id:"enes",name:"Enes Sirek",title:"Yapay Zeka Uzmanı"},
+ {id:"muhabat",name:"Muhabat Demirtaş",title:"Yapay Zeka Uzmanı"},
+ {id:"sevin",name:"Şevin Baran",title:"Yapay Zeka Uzmanı"},
+ {id:"abdullah",name:"Abdullah Topak",title:"Yapay Zeka Uzmanı"}
+];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const initials=n=>n.split(" ").map(w=>w[0]).slice(0,2).join("");
+const uById=id=>USERS.find(u=>u.id===id);
+let db=null,tasks=[],udata={},me=null,pendingId=null,editing=false;
+
+/* ---------- Yardımcılar ---------- */
+function avatar(u,cls=""){
+  const p=udata[u.id]&&udata[u.id].photo,h=USERS.indexOf(u)*57+190;
+  return `<div class="avatar ${cls}" style="background:linear-gradient(135deg,hsl(${h},90%,62%),hsl(${h+60},85%,60%))">${p?`<img src="${p}" alt="">`:initials(u.name)}</div>`;
+}
+function status(t){return t.progress>=100?["bitti","Tamamlandı"]:(t.progress>0||t.startTime)?["devam","Devam Ediyor"]:["bekliyor","Bekliyor"]}
+function fmtTime(v){if(!v)return "—";const d=new Date(v);return isNaN(d)?v:d.toLocaleString("tr-TR",{dateStyle:"short",timeStyle:"short"})}
+async function sha(txt){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(txt));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function rndSalt(){return [...crypto.getRandomValues(new Uint8Array(12))].map(x=>x.toString(16).padStart(2,"0")).join("")}
+
+/* ---------- Modal ---------- */
+function openModal(html){$("modalRoot").innerHTML=`<div class="ov" onclick="if(event.target===this)closeModal()"><div class="glass modal">${html}</div></div>`}
+function closeModal(){$("modalRoot").innerHTML="";pendingId=null}
+
+/* ---------- Giriş / Çıkış ---------- */
+function renderLogin(){
+  $("users").innerHTML=USERS.map(u=>`<div class="glass user" onclick="askPassword('${u.id}')">${avatar(u)}<b>${esc(u.name)}</b><div class="sub">${esc(u.title)}</div></div>`).join("");
+  $("fWho").innerHTML=USERS.filter(u=>!u.manager).map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join("");
+}
+function askPassword(id){
+  pendingId=id;const u=uById(id);
+  openModal(`<div style="text-align:center">${avatar(u)}<b>${esc(u.name)}</b><div class="sub" style="margin-bottom:14px">${esc(u.title)}</div></div>
+   <label>Şifre</label><input type="password" id="pwIn" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+   <div class="err" id="pwErr"></div>
+   <div class="row"><button class="ghost" onclick="closeModal()">İptal</button><button onclick="doLogin()">Giriş Yap</button></div>`);
+  setTimeout(()=>$("pwIn")&&$("pwIn").focus(),50);
+}
+async function verify(id,pass){
+  const d=udata[id];
+  if(d&&d.passHash)return (await sha(d.salt+pass))===d.passHash;
+  return pass===DEFAULT_PASSWORD;
+}
+async function doLogin(){
+  const pass=$("pwIn").value;
+  if(!db){$("pwErr").textContent="Firebase bağlantısı yok.";return}
+  try{
+    if(await verify(pendingId,pass)){me=uById(pendingId);localStorage.setItem("it_user",me.id);closeModal();show()}
+    else{$("pwErr").textContent="Şifre hatalı.";$("pwIn").select()}
+  }catch(e){$("pwErr").textContent="Hata: "+e.message}
+}
+function logout(){me=null;editing=false;localStorage.removeItem("it_user");show()}
+function show(){
+  $("login").classList.toggle("hide",!!me);
+  $("manager").classList.toggle("hide",!(me&&me.manager));
+  $("employee").classList.toggle("hide",!(me&&!me.manager));
+  render();
+}
+
+/* ---------- Şifre değiştirme ---------- */
+function openPwChange(){
+  openModal(`<h2>Şifre Değiştir</h2>
+   <label>Mevcut şifre</label><input type="password" id="pwOld">
+   <label>Yeni şifre (en az 6 karakter)</label><input type="password" id="pwNew">
+   <label>Yeni şifre (tekrar)</label><input type="password" id="pwNew2">
+   <div class="err" id="pwErr"></div>
+   <div class="row"><button class="ghost" onclick="closeModal()">İptal</button><button onclick="changePw()">Kaydet</button></div>`);
+}
+async function changePw(){
+  const o=$("pwOld").value,n=$("pwNew").value,n2=$("pwNew2").value,e=$("pwErr");
+  if(!(await verify(me.id,o)))return e.textContent="Mevcut şifre hatalı.";
+  if(n.length<6)return e.textContent="Yeni şifre en az 6 karakter olmalı.";
+  if(n!==n2)return e.textContent="Yeni şifreler eşleşmiyor.";
+  try{
+    const salt=rndSalt();
+    await db.collection("users").doc(me.id).set({salt,passHash:await sha(salt+n),updatedAt:Date.now()},{merge:true});
+    e.className="err okmsg";e.textContent="Şifre güncellendi ✓";setTimeout(closeModal,900);
+  }catch(x){e.textContent="Hata: "+x.message}
+}
+
+/* ---------- Profil fotoğrafı ---------- */
+function uploadPhoto(inp){
+  const f=inp.files[0];inp.value="";if(!f||!me)return;
+  if(!db)return alert("Firebase bağlantısı yok.");
+  const img=new Image(),url=URL.createObjectURL(f);
+  img.onload=async()=>{
+    const S=256,c=document.createElement("canvas");c.width=c.height=S;
+    const m=Math.min(img.width,img.height),sx=(img.width-m)/2,sy=(img.height-m)/2;
+    c.getContext("2d").drawImage(img,sx,sy,m,m,0,0,S,S);
+    URL.revokeObjectURL(url);
+    try{await db.collection("users").doc(me.id).set({photo:c.toDataURL("image/jpeg",.8),updatedAt:Date.now()},{merge:true})}
+    catch(e){alert("Fotoğraf kaydedilemedi: "+e.message)}
+  };
+  img.onerror=()=>alert("Görsel okunamadı.");
+  img.src=url;
+}
+
+/* ---------- Render ---------- */
+function renderProfile(){
+  const box=$("profile");
+  if(!me){box.classList.add("hide");return}
+  box.classList.remove("hide");
+  box.innerHTML=`<span title="Fotoğrafı değiştir" onclick="$('photoIn').click()">${avatar(me,"xs")}</span>
+   <div><b style="font-size:.9rem">${esc(me.name)}</b></div>
+   <button class="ghost sm" onclick="$('photoIn').click()">📷 Fotoğraf</button>
+   <button class="ghost sm" onclick="openPwChange()">🔑 Şifre Değiştir</button>
+   <button class="ghost sm" onclick="logout()">Çıkış</button>`;
+}
+function render(){
+  renderLogin();renderProfile();
+  if(!me)return;
+  if(me.manager)renderManager();else renderEmployee();
+}
+function renderManager(){
+  $("mHello").innerHTML=`<div class="emp-head" style="margin:0">${avatar(me,"sm")}<div><b>${esc(me.name)}</b><div class="sub">${esc(me.title)} · Tüm ekip görevleri anlık güncellenir</div></div></div>`;
+  const done=tasks.filter(t=>t.progress>=100).length,prog=tasks.filter(t=>t.progress<100&&(t.progress>0||t.startTime)).length;
+  $("stats").innerHTML=[["Toplam Görev",tasks.length],["Devam Eden",prog],["Tamamlanan",done],["Bekleyen",tasks.length-done-prog]]
+    .map(s=>`<div class="glass stat"><b>${s[1]}</b><span class="sub">${s[0]}</span></div>`).join("");
+  $("mBoard").innerHTML=USERS.filter(u=>!u.manager).map(u=>{
+    const list=tasks.filter(t=>t.assignee===u.id);
+    return `<div class="glass"><div class="emp-head">${avatar(u,"sm")}<div><b>${esc(u.name)}</b><div class="sub">${esc(u.title)}</div></div></div>
+    ${list.length?list.map(t=>{const[s,l]=status(t);return `<div class="task"><div class="row"><h4>${esc(t.title)}</h4><span class="st s-${s}">${l}</span></div>
+      ${t.desc?`<p>${esc(t.desc)}</p>`:""}
+      <div class="bar"><i style="width:${t.progress||0}%"></i></div>
+      <div class="row meta"><span>%${t.progress||0}</span><span>Başlama: ${fmtTime(t.startTime)}</span></div>
+      ${t.note?`<div class="note">📝 ${esc(t.note)}</div>`:""}
+      <div style="margin-top:8px;text-align:right"><button class="del" onclick="delTask('${t.id}')">Sil</button></div></div>`}).join(""):`<div class="empty">Atanmış görev yok</div>`}</div>`}).join("");
+}
+function renderEmployee(){
+  $("eHello").innerHTML=`<div class="emp-head" style="margin:0">${avatar(me,"sm")}<div><b>${esc(me.name)}</b><div class="sub">${esc(me.title)} · Size atanan görevler</div></div></div>`;
+  if(editing)return;
+  const list=tasks.filter(t=>t.assignee===me.id);
+  $("eTasks").innerHTML=list.length?list.map(t=>{const[s,l]=status(t);return `<div class="glass task" style="margin-bottom:14px">
+    <div class="row"><h4>${esc(t.title)}</h4><span class="st s-${s}">${l}</span></div>
+    ${t.desc?`<p>${esc(t.desc)}</p>`:""}
+    <label>Başlama Saati</label><input type="datetime-local" id="st_${t.id}" value="${esc(t.startTime||"")}" oninput="editing=true">
+    <label>İlerleme: <b id="pv_${t.id}">%${t.progress||0}</b></label>
+    <input type="range" min="0" max="100" step="5" id="pg_${t.id}" value="${t.progress||0}" oninput="editing=true;$('pv_${t.id}').textContent='%'+this.value">
+    <label>Not</label><textarea rows="2" id="nt_${t.id}" oninput="editing=true" placeholder="Not ekle…">${esc(t.note||"")}</textarea>
+    <button onclick="saveTask('${t.id}')">Kaydet</button></div>`}).join(""):`<div class="glass empty">Henüz size atanmış görev yok.</div>`;
+}
+
+/* ---------- Görev işlemleri (Firestore) ---------- */
+function addTask(){
+  const title=$("fTitle").value.trim();if(!title)return alert("Görev başlığı gir.");
+  if(!db)return alert("Firebase bağlantısı yok.");
+  db.collection("tasks").add({title,desc:$("fDesc").value.trim(),assignee:$("fWho").value,assignedBy:me.id,
+    startTime:"",progress:0,note:"",createdAt:Date.now(),updatedAt:Date.now()})
+   .then(()=>{$("fTitle").value="";$("fDesc").value=""}).catch(e=>alert("Hata: "+e.message));
+}
+function saveTask(id){
+  if(!db)return alert("Firebase bağlantısı yok.");
+  db.collection("tasks").doc(id).update({startTime:$("st_"+id).value,progress:+$("pg_"+id).value,note:$("nt_"+id).value.trim(),updatedAt:Date.now()})
+   .then(()=>{editing=false;render()}).catch(e=>alert("Hata: "+e.message));
+}
+function delTask(id){if(db&&confirm("Bu görev silinsin mi?"))db.collection("tasks").doc(id).delete().catch(e=>alert(e.message))}
+
+function startListening(){
+  const ok=()=>{$("live").className="live";$("live").textContent="Canlı"};
+  const bad=err=>{$("live").className="live off";$("live").textContent="Bağlantı hatası";console.error(err)};
+  db.collection("tasks").orderBy("createdAt","desc").onSnapshot(s=>{tasks=s.docs.map(d=>({id:d.id,...d.data()}));ok();render()},bad);
+  db.collection("users").onSnapshot(s=>{udata={};s.docs.forEach(d=>udata[d.id]=d.data());ok();render()},bad);
+}
+
+/* ---------- Başlangıç ---------- */
+function boot(){
+  const saved=localStorage.getItem("it_user");if(saved)me=uById(saved)||null;
+  show();
+  const placeholder=!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey.startsWith("BURAYA");
+  if(placeholder){$("cfgWarn").classList.remove("hide");$("live").textContent="Firebase yok";return}
+  try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();startListening()}
+  catch(e){$("live").textContent="Başlatma hatası";console.error(e)}
+}
+
+/* =====================================================================
+   FIREBASE AYARLARI — Aşağıdaki değerleri kendi projenle değiştir.
+   Firebase Console > Proje Ayarları > Uygulamalarınız > Web (</>) > firebaseConfig
+   ===================================================================== */
+const FIREBASE_CONFIG={
+apiKey: "AIzaSyCxC6p1yxOC-Mulj3eTEIWg8__5KhKC1-E",
+  authDomain: "is-takip-app-964f6.firebaseapp.com",
+  databaseURL: "https://is-takip-app-964f6-default-rtdb.firebaseio.com",
+  projectId: "is-takip-app-964f6",
+  storageBucket: "is-takip-app-964f6.firebasestorage.app",
+  messagingSenderId: "847670170860",
+  appId: "1:847670170860:web:8a1aed9b8002383ffe41c9",
+  measurementId: "G-ER9VQZTZYJ"
+};
+boot();
+</script>
+</body>
+</html>
